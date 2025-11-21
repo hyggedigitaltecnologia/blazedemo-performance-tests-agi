@@ -1,0 +1,43 @@
+name: JMeter Performance Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  jmeter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Download Apache JMeter 5.6.3
+        run: |
+          JMETER_VERSION=5.6.3
+          curl -L "https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" -o "apache-jmeter-${JMETER_VERSION}.tgz"
+          tar -xzf "apache-jmeter-${JMETER_VERSION}.tgz"
+          echo "JMETER_HOME=$PWD/apache-jmeter-${JMETER_VERSION}" >> $GITHUB_ENV
+
+      - name: Run JMeter test plan (load + peak)
+        run: |
+          mkdir -p performance/results performance/report-html
+          $JMETER_HOME/bin/jmeter \
+            -n \
+            -t performance/blazedemo_load_test.jmx \
+            -l performance/results/results.jtl \
+            -e -o performance/report-html
+
+      - name: Upload JMeter HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-html-report
+          path: performance/report-html

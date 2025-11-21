@@ -1,0 +1,13 @@
+# JMeter
+performance/results/
+performance/report-html/
+jmeter.log
+*.jtl
+*.csv
+
+# IDE / SO
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
